@@ -1,0 +1,14 @@
+pg_dump -U user -h IP_ADR -F c --file=/PostgresPlus/backup/dbfull20181227.dump aioc
+
+-- pg_dump with sh script
+PGPASSWORD="xxxx" /PostgresPlus/9.5AS/bin/pg_dump -U xdb_replication -h IP_ADR1 -p 5444 -F c --file=/PostgresPlus/backup/dbfull20181227.dump aioc
+PGPASSWORD="xxxx" /PostgresPlus/9.5AS/bin/pg_dump -U xdb_replication -h IP_ADR -p 5444  --file=/PostgresPlus/backup/dbfull20181227.sql aioc
+-- pg_dump specific tables
+
+pg_dump -U xdb_replication -t aioc.qrtz_job_details -t aioc.qrtz_triggers -t aioc.qrtz_blob_triggers -t aioc.qrtz_cron_triggers
+-t aioc.qrtz_fired_triggers -t aioc.qrtz_job_listeners -t aioc.qrtz_locks -t aioc.qrtz_simple_triggers -t aioc.qrtz_trigger_fire
+-t aioc.qrtz_trigger_fire_properties -t aioc.qrtz_trigger_listeners -Fp -f /logs/backup/dmp_backup_aioc_20190115_tables.dmp aioc
+
+-- restore dump file
+psql -U xdb_replication aioc < /logs/backup/dmp_backup_radius_20190114.dmp
+psql -U xdb_replication aioc < /logs/backup/dmp_backup_aioc_20190115_tables.dmp
