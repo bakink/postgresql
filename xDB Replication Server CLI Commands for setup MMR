@@ -1,0 +1,342 @@
+
+https://venkatjd.blogspot.com/2016/05/xdb-replication-server-cli-commands-for.html
+
+xDB Replication Server CLI Commands for setup MMR.
+Please follow the below steps will help you to configure MMR in command line.
+
+1. Created mmr database and mtest table, inserted values on primary server.
+
+edb=# create database mmr;
+CREATE DATABASE
+edb=# \c mmr
+You are now connected to database "mmr" as user "enterprisedb".
+mmr=# create table mtest(id int primary key);
+CREATE TABLE
+mmr=# insert into mtest values(generate_series(1,10));
+INSERT 0 10
+mmr=#
+mmr=# select count(*) from mtest;
+ count
+-------
+    10
+(1 row)
+
+edb=# create database mnode;
+CREATE DATABASE
+
+The below version command provides the xDB Replication Server CLI’s version number.
+
+/usr/bin/java -jar /opt/PostgresPlus/EnterpriseDB-xDBReplicationServer/bin/edb-repcli.jar -version
+Version: 6.0.0-beta2
+
+2.By using below command encrypted the password.  We need to give the password into the infile.txt.
+
+[enterprisedb@localhost ~]$/usr/bin/java -jar /opt/PostgresPlus/EnterpriseDB-xDBReplicationServer/bin/edb-repcli.jar -encrypt -input /opt/PostgresPlus/9.5AS/bin/infile.txt -output /opt/PostgresPlus/9.5AS/bin/pwdfile.txt
+
+
+3.The following example adds a publication database definition for a master definition node in a multi-master replication system.
+
+[enterprisedb@localhost ~]$/usr/bin/java -jar /opt/PostgresPlus/EnterpriseDB-xDBReplicationServer/bin/edb-repcli.jar -addpubdb -repsvrfile /home/enterprisedb/pubrepsvrfile -dbtype enterprisedb -dbhost localhost -dbport 5444 -dbuser enterprisedb -dbpassword SJ70z8Gk0zY=  -database mmr -repgrouptype m -nodepriority 1
+Adding publication database...
+Publication database added successfully. Publication database id:1
+
+
+[enterprisedb@localhost ~]$/usr/bin/java -jar /opt/PostgresPlus/EnterpriseDB-xDBReplicationServer/bin/edb-repcli.jar -printpubdbids -repsvrfile /home/enterprisedb/pubrepsvrfile
+Printing publication database ids...
+1
+
+[enterprisedb@localhost ~]$ /usr/bin/java -jar /opt/PostgresPlus/EnterpriseDB-xDBReplicationServer/bin/edb-repcli.jar -printpubdbidsdetails -repsvrfile /home/enterprisedb/pubrepsvrfile
+Printing publication database ids with details...
+id:host:port:database|sid:user
+1:localhost:5444:mmr:enterprisedb
+
+
+
+[enterprisedb@localhost ~]$ /usr/bin/java -jar /opt/PostgresPlus/EnterpriseDB-xDBReplicationServer/bin/edb-repcli.jar -updatepubdb -repsvrfile /home/enterprisedb/pubrepsvrfile -pubdbid 1 -dbhost localhost -dbport 5444 -dbuser enterprisedb -dbpassword SJ70z8Gk0zY= -database mmr -nodepriority 1
+Updating publication database ...
+Publication database with ID 1 is updated successfully.
+
+
+[enterprisedb@localhost ~]$ /usr/bin/java -jar /opt/PostgresPlus/EnterpriseDB-xDBReplicationServer/bin/edb-repcli.jar -createpub pub95 -repsvrfile /home/enterprisedb/pubrepsvrfile -pubdbid 1 -reptype T -tables public.mtest -repgrouptype m
+Creating publication...
+Tables:[[public.mtest, TABLE]]
+Filter clause:[]
+Conflict Resolution Option:[ Earliest Timestamp ]
+Standby Conflict Resolution Option:[ Manual ]
+Publication created.
+
+
+[enterprisedb@localhost ~]$ /usr/bin/java -jar /opt/PostgresPlus/EnterpriseDB-xDBReplicationServer/bin/edb-repcli.jar -addpubdb -repsvrfile /home/enterprisedb/pubrepsvrfile -dbtype enterprisedb -dbhost localhost -dbport 5444 -dbuser enterprisedb -dbpassword SJ70z8Gk0zY=  -database mnode -repgrouptype m -nodepriority 2
+Adding publication database...
+Replicating publication schema...
+Publication database added successfully. Publication database id:5
+
+[enterprisedb@localhost ~]$ /usr/bin/java -jar /opt/PostgresPlus/EnterpriseDB-xDBReplicationServer/bin/edb-repcli.jar -validatepubs -repsvrfile /home/enterprisedb/pubrepsvrfile -pubdbid 1 -repgrouptype m
+Validating all available publications ...
+The schema definitions for all the non snapshot-only publications tables are in sync
+with the source.
+
+[enterprisedb@localhost ~]$ /usr/bin/java -jar /opt/PostgresPlus/EnterpriseDB-xDBReplicationServer/bin/edb-repcli.jar -dosynchronize pub95 -repsvrfile /home/enterprisedb/pubrepsvrfile -repgrouptype m
+Performing synchronize...
+Publication synchronized successfully.
+
+mnode=# \dt
+           List of relations
+ Schema | Name  | Type  |    Owner    
+--------+-------+-------+--------------
+ public | mtest | table | enterprisedb
+(1 row)
+
+mnode=# select count(*) from mtest;
+ count
+-------
+    10
+(1 row)
+
+mnode=# insert into mtest values(generate_series(11,100));
+INSERT 0 90
+
+
+[enterprisedb@localhost ~]$ /usr/bin/java -jar /opt/PostgresPlus/EnterpriseDB-xDBReplicationServer/bin/edb-repcli.jar -dosynchronize pub95 -repsvrfile /home/enterprisedb/pubrepsvrfile -repgrouptype m
+Performing synchronize...
+Publication synchronized successfully.
+
+edb=# \c mmr
+You are now connected to database "mmr" as user "enterprisedb".
+mmr=# select count(*) from mtest;
+ count
+-------
+    10
+(1 row)
+
+
+mmr=# select count(*) from mtest;
+ count
+-------
+   100
+(1 row)
+
+
+mmr=# create table mtest1(id int primary key);
+CREATE TABLE
+mmr=# insert into mtest1 values(generate_series(1,100));
+INSERT 0 100
+mmr=# create table mtest2(id int primary key);         
+CREATE TABLE
+mmr=# insert into mtest2 values(generate_series(1,100));
+INSERT 0 100
+
+
+/usr/bin/java -jar /opt/PostgresPlus/EnterpriseDB-xDBReplicationServer/bin/edb-repcli.jar -addtablesintopub pub95 -repsvrfile /home/enterprisedb/pubrepsvrfile -tables public.mtest1 public.mtest2 -repgrouptype M
+Adding tables to publication pub95 ...
+
+Tables:[[public.mtest1, TABLE], [public.mtest2, TABLE]]
+Filter clause:[]
+Conflict Resolution Option:[ Earliest Timestamp, Earliest Timestamp ]
+Standby Conflict Resolution Option:[ Manual, Manual ]
+Replicating published table(s) to other Master Nodes...
+Publication updated successfully
+
+
+[enterprisedb@localhost ~]$ /usr/bin/java -jar /opt/PostgresPlus/EnterpriseDB-xDBReplicationServer/bin/edb-repcli.jar -dommrsnapshot pub95 -pubhostdbid 5 -repsvrfile /home/enterprisedb/pubrepsvrfile
+Performing snapshot...
+Setting any pending transactions status to cancelled...
+Running EnterpriseDB Migration Toolkit (Build 49.0.3) ...
+Source database connectivity info...
+conn =jdbc:edb://localhost:5444/mmr
+user =enterprisedb
+password=******
+Target database connectivity info...
+conn =jdbc:edb://localhost:5444/mnode
+user =enterprisedb
+password=******
+Connecting with source EnterpriseDB database server...
+Connected to EnterpriseDB, version '9.5.0.5'
+Connecting with target EnterpriseDB database server...
+Connected to EnterpriseDB, version '9.5.0.5'
+Importing enterprisedb schema public...
+Table List: 'mtest','mtest1','mtest2'
+Loading Table Data in 8 MB batches...
+Disabling FK constraints & triggers on public.mtest before truncate...
+Truncating table mtest before data load...
+Disabling indexes on public.mtest before data load...
+Loading Table: mtest ...
+[mtest] Migrated 100 rows.
+[mtest] Table Data Load Summary: Total Time(s): 0.212 Total Rows: 100
+Disabling FK constraints & triggers on public.mtest1 before truncate...
+Truncating table mtest1 before data load...
+Disabling indexes on public.mtest1 before data load...
+Loading Table: mtest1 ...
+[mtest1] Migrated 100 rows.
+[mtest1] Table Data Load Summary: Total Time(s): 0.014 Total Rows: 100
+Disabling FK constraints & triggers on public.mtest2 before truncate...
+Truncating table mtest2 before data load...
+Disabling indexes on public.mtest2 before data load...
+Loading Table: mtest2 ...
+[mtest2] Migrated 100 rows.
+[mtest2] Table Data Load Summary: Total Time(s): 0.622 Total Rows: 100
+Enabling FK constraints & triggers on public.mtest...
+Enabling indexes on public.mtest after data load...
+Enabling FK constraints & triggers on public.mtest1...
+Enabling indexes on public.mtest1 after data load...
+Enabling FK constraints & triggers on public.mtest2...
+Enabling indexes on public.mtest2 after data load...
+Performing ANALYZE on EnterpriseDB database...
+Data Load Summary: Total Time (sec): 0.959 Total Rows: 300 Total Size(MB): 0.0
+
+Schema public imported successfully.
+
+
+Migration process completed successfully.
+
+Migration logs have been saved to /var/log/xdb-6.0
+
+******************** Migration Summary ********************
+Tables: 3 out of 3
+
+Total objects: 3
+Successful count: 3
+Failed count: 0
+Invalid count: 0
+
+*************************************************************
+Snapshot taken successfully.
+
+
+mnode=# select count(*) from mtest1;
+ count
+-------
+   100
+(1 row)
+
+mnode=# select count(*) from mtest2;
+ count
+-------
+   100
+(1 row)
+
+[enterprisedb@localhost ~]$ /usr/bin/java -jar /opt/PostgresPlus/EnterpriseDB-xDBReplicationServer/bin/edb-repcli.jar -printpublishedtables pub95 -repsvrfile /home/enterprisedb/pubrepsvrfile
+Printing tables under publication: pub95
+
+public.mtest
+public.mtest1
+public.mtest2
+
+[root@localhost tmp]# more col.txt
+alter table public.mtest add column name varchar(10);
+
+[enterprisedb@localhost ~]$ /usr/bin/java -jar /opt/PostgresPlus/EnterpriseDB-xDBReplicationServer/bin/edb-repcli.jar -replicateddl pub95 -table public.mtest -repsvrfile /home/enterprisedb/pubrepsvrfile  -ddlscriptfile /tmp/col.txt
+DDL changes successfully replicated to all database nodes.
+
+[root@localhost tmp]# more col.txt
+alter table public.mtest1 add column name varchar(10);
+
+[enterprisedb@localhost ~]$ /usr/bin/java -jar /opt/PostgresPlus/EnterpriseDB-xDBReplicationServer/bin/edb-repcli.jar -replicateddl pub95 -table public.mtest1  -repsvrfile /home/enterprisedb/pubrepsvrfile  -ddlscriptfile /tmp/col.txt
+DDL changes successfully replicated to all database nodes.
+
+
+mnode=# \d+ mtest
+                                Table "public.mtest"
+ Column |         Type          | Modifiers | Storage  | Stats target | Description
+--------+-----------------------+-----------+----------+--------------+-------------
+ id     | integer               | not null  | plain    |              |
+ name   | character varying(10) |           | extended |              |
+Indexes:
+    "mtest_pkey" PRIMARY KEY, btree (id)
+Triggers:
+    rrpd_public_mtest AFTER DELETE ON mtest FOR EACH ROW EXECUTE PROCEDURE rrpd_public_mtest_tgfunc()
+    rrpi_public_mtest AFTER INSERT ON mtest FOR EACH ROW EXECUTE PROCEDURE rrpi_public_mtest_tgfunc()
+    rrpu_public_mtest AFTER UPDATE ON mtest FOR EACH ROW WHEN (old.* IS DISTINCT FROM new.*) EXECUTE PROCEDURE rrpu_public_mtest_tgfunc()
+
+mnode=# \d+ mtest1
+                               Table "public.mtest1"
+ Column |         Type          | Modifiers | Storage  | Stats target | Description
+--------+-----------------------+-----------+----------+--------------+-------------
+ id     | integer               | not null  | plain    |              |
+ name   | character varying(10) |           | extended |              |
+Indexes:
+    "mtest1_pkey" PRIMARY KEY, btree (id)
+Triggers:
+    rrpd_public_mtest1 AFTER DELETE ON mtest1 FOR EACH ROW EXECUTE PROCEDURE rrpd_public_mtest1_tgfunc()
+    rrpi_public_mtest1 AFTER INSERT ON mtest1 FOR EACH ROW EXECUTE PROCEDURE rrpi_public_mtest1_tgfunc()
+    rrpu_public_mtest1 AFTER UPDATE ON mtest1 FOR EACH ROW WHEN (old.* IS DISTINCT FROM new.*) EXECUTE PROCEDURE rrpu_public_mtest1_tgfunc()
+
+
+mmr=# insert into mtest1 values(generate_series(101,150),'venkat');
+INSERT 0 50
+mmr=# insert into mtest values(generate_series(101,150),'venkat');
+INSERT 0 50
+
+
+[enterprisedb@localhost ~]$ /usr/bin/java -jar /opt/PostgresPlus/EnterpriseDB-xDBReplicationServer/bin/edb-repcli.jar -confschedulemmr 1 -pubname pub95 -repsvrfile /home/enterprisedb/pubrepsvrfile -realtime 10
+Configuring scheduler ...
+Job is successfully scheduled.
+
+
+mnode=# select count(*) from mtest;
+ count
+-------
+   150
+(1 row)
+
+mnode=# select * from mtest where id >100 limit 10;
+ id  |  name 
+-----+--------
+ 101 | venkat
+ 102 | venkat
+ 103 | venkat
+ 104 | venkat
+ 105 | venkat
+ 106 | venkat
+ 107 | venkat
+ 108 | venkat
+ 109 | venkat
+ 110 | venkat
+(10 rows)
+
+
+mnode=# select count(*) from mtest1;
+ count
+-------
+   150
+(1 row)
+
+mnode=# select * from mtest1 where id >100 limit 10;
+ id  |  name 
+-----+--------
+ 101 | venkat
+ 102 | venkat
+ 103 | venkat
+ 104 | venkat
+ 105 | venkat
+ 106 | venkat
+ 107 | venkat
+ 108 | venkat
+ 109 | venkat
+ 110 | venkat
+(10 rows)
+
+
+[enterprisedb@localhost ~]$ /usr/bin/java -jar /opt/PostgresPlus/EnterpriseDB-xDBReplicationServer/bin/edb-repcli.jar  -printconfresolutionstrategy pub95 -repsvrfile /home/enterprisedb/pubrepsvrfile -table public.mtest
+Primary/Standby Conflict Resolution Strategy...
+Conflict Resolution Option:[ Earliest Timestamp ]
+Standby Conflict Resolution Option:[ Manual ]
+
+
+[enterprisedb@localhost ~]$ /usr/bin/java -jar /opt/PostgresPlus/EnterpriseDB-xDBReplicationServer/bin/edb-repcli.jar -cleanshadowhistforpub pub95 -repsvrfile /home/enterprisedb/pubrepsvrfile -mmrdbid 1
+Removing shadow table's transaction history ...
+
+Shadow tables transaction history removed successfully for DB ID 1
+Shadow tables transaction history removed successfully.
+
+
+[enterprisedb@localhost ~]$ /usr/bin/java -jar /opt/PostgresPlus/EnterpriseDB-xDBReplicationServer/bin/edb-repcli.jar -printschedule pub95 -repsvrfile  /home/enterprisedb/pubrepsvrfile -repgrouptype m
+Printing publication schedule...
+
+Job type        Synchronize
+
+Scheduled time        2016-02-13 10:15:04
+
+Previous fire time    2016-02-15 02:13:14
+
+Next fire time        2016-02-15 02:13:24
