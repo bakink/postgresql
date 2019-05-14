@@ -1,0 +1,65 @@
+
+CREATE TABLE ddl_log
+(
+  username character varying(30),
+  osuser character varying(30),
+  hostname character varying(50),
+  terminal character varying(50),
+  ip_address character varying(30),
+  ddl_date timestamp(3) without time zone,
+  ddl_type character varying(30),
+  object_type character varying(18),
+  object_owner character varying(30),
+  object_name character varying(128),
+  sql_text text,
+  inst_id integer,
+  sid integer
+)
+WITH (
+  OIDS=FALSE
+);
+ALTER TABLE ddl_log
+  OWNER TO testuser;
+
+
+CREATE OR REPLACE FUNCTION DDL_TRIGGER() RETURNS event_trigger AS $$
+DECLARE r RECORD;
+BEGIN
+    FOR r IN select * from pg_event_trigger_ddl_commands()  LOOP
+         INSERT INTO ddl_log
+  (username,
+   osuser,
+   hostname,
+   terminal,
+   ip_address,
+   ddl_date,
+   ddl_type,
+   object_type,
+   object_owner,
+   object_name,
+   sql_text,
+   inst_id,
+   sid)
+  VALUES
+  (current_user,
+   'OS_USER',
+   inet_client_addr(),
+   'TERMINAL',
+   inet_client_addr(),
+   CURRENT_TIMESTAMP,
+   r.command_tag,
+   r.object_type,
+   r.schema_name,
+   'BAKI',
+   current_query(),
+   1,
+   1
+   );
+    END LOOP;
+END;
+$$
+LANGUAGE plpgsql;
+
+CREATE EVENT TRIGGER E_DDL_TRIGGER
+  ON ddl_command_end 
+  EXECUTE PROCEDURE DDL_TRIGGER();
