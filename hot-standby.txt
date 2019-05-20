@@ -1,0 +1,146 @@
+https://www.howtoforge.com/tutorial/how-to-set-up-master-slave-replication-for-postgresql-96-on-ubuntu-1604/
+
+######2 node da yapýlmalý
+
+---PotgreSql Install
+yum install https://yum.postgresql.org/9.5/redhat/rhel-7-x86_64/pgdg-centos95-9.5-3.noarch.rpm
+yum install postgresql95 postgresql95-contrib postgresql95-libs postgresql95-server
+/usr/pgsql-9.5/bin/postgresql95-setup initdb
+systemctl start postgresql-9.5
+systemctl status postgresql-9.5
+
+
+
+----pg_hba.conf 
+# Localhost
+host    replication     repuser         127.0.0.1/32           md5
+# PostgreSQL Master IP address
+host    replication     repuser         10.20.41.191/32        md5
+# PostgreSQL SLave IP address
+host    replication     repuser         10.20.41.192/32        md5
+
+
+---postgresql.conf
+listen_addresses = '*'
+wal_level = hot_standby
+synchronous_commit = local
+archive_mode = on
+archive_command = 'archive_command = 'test ! -f /wal_archive/%f && cp %p /wal_archive/%f'
+max_wal_senders = 2
+wal_keep_segments = 10
+synchronous_standby_names = 'pgslave001'
+hot_standby = on
+
+select * from pg_settings where name in 
+(
+'listen_addresses'
+,'wal_level'
+,'synchronous_commit'
+,'archive_mode'
+,'archive_command'
+,'max_wal_senders'
+,'wal_keep_segments'
+,'synchronous_standby_names'
+,'hot_standby'
+)
+
+#######master node' da yapýlmalý
+
+--- create replication user
+
+postgres=# CREATE USER repuser REPLICATION LOGIN ENCRYPTED PASSWORD 'repuser';
+CREATE ROLE
+postgres=# \du
+                                   List of roles
+ Role name |                         Attributes                         | Member of
+-----------+------------------------------------------------------------+-----------
+ postgres  | Superuser, Create role, Create DB, Replication, Bypass RLS | {}
+ repuser   | Replication                                                | {}
+
+
+-----Backup Master
+
+pg_basebackup -D /basebackup/standby -Ft -z -P -R -U repuser -p 5432 -h 10.20.41.191 -l "`date`" 
+
+--copy to standby
+scp /basebackup/standby/* root@10.20.41.192:/tmp
+
+
+#######standby node' da yapýlmalý
+
+[root@postgresql-2 /]# systemctl stop postgresql9.5
+
+
+-bash-4.2$ ls -l /tmp/*tar*
+-rw-r--r--. 1 root root 25290681 May 20 12:08 /tmp/16388.tar.gz
+-rw-r--r--. 1 root root  2673534 May 20 12:08 /tmp/base.tar.gz
+
+gunzip /tmp/*tar*.gz
+
+mv /var/lib/pgsql/9.5/data /var/lib/pgsql/9.5/data-backup/
+mkdir /var/lib/pgsql/9.5/data
+chmod 700 /var/lib/pgsql/9.5/data
+
+
+cp /tmp/base.tar /var/lib/pgsql/9.5/data
+mkdir /var/lib/pgsql/9.5/data/d_ts_aioc
+chmod 700 /var/lib/pgsql/9.5/data/d_ts_aioc
+cp /tmp/16388.tar /var/lib/pgsql/9.5/data/d_ts_aioc/
+
+cd /var/lib/pgsql/9.5/data
+tar -xvf base.tar
+
+
+/var/lib/pgsql/9.5/data/d_ts_aioc/
+tar -xvf 16388.tar
+
+
+--create recovery.conf 
+
+-bash-4.2$ cat /var/lib/pgsql/9.5/data/recovery.conf
+standby_mode = 'on'
+primary_conninfo = 'host=10.20.41.191 port=5432 user=repuser password=repuser application_name=pgslave001'
+restore_command = 'cp /wal_archive/%f "%p"'
+trigger_file = '/tmp/postgresql.trigger.5432'
+recovery_target_timeline='latest'
+
+
+systemctl start postgresql9.5
+
+##master da
+
+select * from pg_stat_replication;
+
+
+***************************************************************************************************
+
+swithover/switchback
+  
+https://www.linkedin.com/pulse/postgresql-96-ile-switchover-samed-yildirim/  
+
+---Master Postgres'in Temiz Kapatýlmasý:
+
+/usr/pgsql-9.5/bin/pg_ctl -D /var/lib/pgsql/9.5/data/ stop -m fast
+
+
+--standby date alýnan/iþlenen eþit olmalý.
+
+select pg_last_xlog_receive_location(), pg_last_xlog_replay_location();
+
+
+-bash-4.2$  /usr/pgsql-9.5/bin/pg_ctl -D /var/lib/pgsql/9.5/data promote
+server promoting
+
+--kontrol
+select pg_is_in_recovery();
+
+
+Eski Master standby:
+
+standby_mode = 'on'
+primary_conninfo = 'host=10.20.41.192 port=5432 user=repuser password=repuser application_name=pgslave001'
+restore_command = 'cp /wal_archive/%f "%p"'
+trigger_file = '/tmp/postgresql.trigger.5432'
+recovery_target_timeline='latest'
+
+/usr/pgsql-9.5/bin/pg_ctl -D /var/lib/pgsql/9.5/data start
