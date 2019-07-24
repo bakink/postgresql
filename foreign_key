@@ -1,0 +1,12 @@
+SELECT
+	n1.nspname AS primary_key_ns,
+	c1.relname AS primary_key_table,
+	n2.nspname AS foreign_key_ns,
+	c2.relname AS foreign_key_table
+FROM pg_catalog.pg_constraint c
+JOIN ONLY pg_catalog.pg_class c1     ON c1.oid = c.confrelid
+JOIN ONLY pg_catalog.pg_class c2     ON c2.oid = c.conrelid
+JOIN ONLY pg_catalog.pg_namespace n1 ON n1.oid = c1.relnamespace
+JOIN ONLY pg_catalog.pg_namespace n2 ON n2.oid = c2.relnamespace
+WHERE c1.relkind = 'r' AND c.contype = 'f' AND c1.relname = 'cp_workflow_history' 
+ORDER BY 1,2,3,4;
