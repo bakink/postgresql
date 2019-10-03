@@ -15,3 +15,6 @@ export PGPASSWORD="xxxxxx"
 -- restore dump file
 psql -U xdb_replication aioc < /logs/backup/dmp_backup_radius_20190114.dmp
 psql -U xdb_replication aioc < /logs/backup/dmp_backup_aioc_20190115_tables.dmp
+
+--schema export
+/u01/PostgresPlus/9.5AS/bin/pg_dump -h localhost -p 5444 -U xdb_replication -d aioc -n aioc -f /u01/dmp/aioc.dmp
