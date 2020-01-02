@@ -1,0 +1,5 @@
+--https://info.crunchydata.com/blog/how-to-perform-a-major-version-upgrade-using-pg_upgrade-in-postgresql
+--check
+time /usr/pgsql-12/bin/pg_upgrade -b /usr/pgsql-11/bin -B /usr/pgsql-12/bin -d /var/lib/postgresql/11/data -D /var/lib/postgresql/12/data -k -c
+--upgrade
+time /usr/pgsql-12/bin/pg_upgrade -b /usr/pgsql-11/bin -B /usr/pgsql-12/bin -d /var/lib/postgresql/11/data -D /var/lib/postgresql/12/data -k
