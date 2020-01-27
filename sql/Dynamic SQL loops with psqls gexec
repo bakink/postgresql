@@ -1,0 +1,5 @@
+-- counting rows from all user tables dynamically
+select format('select count(*) from %s.%s', 
+quote_ident(table_schema), quote_ident(table_name)) as sql from information_schema.tables where table_type ~ 'BASE'
+and not table_schema LIKE ANY(array[E'pg\\_%', 'information_schema']) order by
+table_schema, table_name \gexec
