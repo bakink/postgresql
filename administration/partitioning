@@ -1,0 +1,2 @@
+--select only main table 
+  SELECT * FROM ONLY <name-of-parent-table>
