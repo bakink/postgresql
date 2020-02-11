@@ -1,0 +1,56 @@
+
+##Tablodaki tüm kayıtları dolaşıp bozuk kayıtları logluyor.
+--select * from sc_rdp_ocr_data srod 
+--create table testlog (a number)
+--create table errorlog(a number )
+DO $f$
+declare
+    curid INT := 0;
+    vcontent TEXT;
+    badid INT;
+begin
+FOR badid IN SELECT db_id FROM only sc_rdp_ocr_data order by db_id LOOP
+    curid = curid + 1;
+    if curid % 100000 = 0 then
+        insert into testlog values( curid);
+    end if;
+    begin
+        SELECT data
+        INTO vcontent
+        FROM sc_rdp_ocr_data where db_id = badid;
+        vcontent := substr(vcontent,1,length(vcontent));
+    exception
+        when others then
+            insert into errorlog values( badid);
+            continue;
+    end;
+end loop;
+end;
+$f$;
+ 
+ 
+ 
+##Bu sorgu toast objesinin hangi tabloya ait olduğunu gösteriyor.
+SELECT pg_catalog.pg_relation_filenode(c.oid) as "Object ID", relname as "Object Name",
+case WHEN relkind='r' THEN 'Table'
+     when relkind='m' THEN 'Materialized View'
+     when relkind='i' THEN 'Index'
+     when relkind='S' THEN 'Sequence'
+     when relkind='t' THEN 'Toast'
+     when relkind='v' THEN 'View'
+     when relkind='c' THEN 'Composite'
+     when relkind='f' THEN 'Foreign_Table'
+     ELSE 'other'
+    end
+     as "Object Type", o.rolname as "Owner"
+FROM pg_catalog.pg_class c
+        LEFT JOIN pg_catalog.pg_authid o ON o.oid=c.relowner
+        LEFT JOIN pg_catalog.pg_namespace n ON n.oid = c.relnamespace
+        LEFT JOIN pg_catalog.pg_database d ON d.datname = pg_catalog.current_database(),
+        pg_catalog.pg_tablespace t
+WHERE
+   relname like '%toast%' and 
+  t.oid = CASE
+          WHEN reltablespace = 0 THEN reltablespace
+          ELSE dattablespace
+          END;
