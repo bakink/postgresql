@@ -1,0 +1,277 @@
+--https://pgstef.github.io/2018/02/28/custom_pgdata_with_systemd.html
+
+###################################################################
+######Redhat ve Centos Üzerine Yum ile Postgresql 9.6 Kurulumu#####
+###################################################################
+########Burda 7.7 üzerine kurulum yapıldı
+
+[root@avsprdjrcnfdb01 ~]# yum install https://download.postgresql.org/pub/repos/yum/9.6/redhat/rhel-7.7-x86_64/pgdg-redhat96-9.6-3.noarch.rpm -y
+Loaded plugins: fastestmirror, langpacks
+pgdg-redhat96-9.6-3.noarch.rpm                                                                                                       | 5.9 kB  00:00:00     
+Examining /var/tmp/yum-root-6M4wxN/pgdg-redhat96-9.6-3.noarch.rpm: pgdg-redhat-repo-42.0-6.noarch
+Marking /var/tmp/yum-root-6M4wxN/pgdg-redhat96-9.6-3.noarch.rpm to be installed
+Resolving Dependencies
+--> Running transaction check
+---> Package pgdg-redhat-repo.noarch 0:42.0-6 will be installed
+--> Finished Dependency Resolution
+base/7/x86_64                                                                                                                        | 3.6 kB  00:00:00     
+base/7/x86_64/group_gz                                                                                                               | 165 kB  00:00:00     
+base/7/x86_64/primary_db                                                                                                             | 6.0 MB  00:00:01     
+extras/7/x86_64                                                                                                                      | 2.9 kB  00:00:00     
+extras/7/x86_64/primary_db                                                                                                           | 159 kB  00:00:00     
+updates/7/x86_64                                                                                                                     | 2.9 kB  00:00:00     
+updates/7/x86_64/primary_db                                                                                                          | 6.7 MB  00:00:02     
+
+Dependencies Resolved
+
+============================================================================================================================================================
+ Package                                Arch                         Version                        Repository                                         Size
+============================================================================================================================================================
+Installing:
+ pgdg-redhat-repo                       noarch                       42.0-6                         /pgdg-redhat96-9.6-3.noarch                       7.5 k
+
+Transaction Summary
+============================================================================================================================================================
+Install  1 Package
+
+Total size: 7.5 k
+Installed size: 7.5 k
+Downloading packages:
+Running transaction check
+Running transaction test
+Transaction test succeeded
+Running transaction
+  Installing : pgdg-redhat-repo-42.0-6.noarch                                                                                                           1/1 
+  Verifying  : pgdg-redhat-repo-42.0-6.noarch                                                                                                           1/1 
+
+Installed:
+  pgdg-redhat-repo.noarch 0:42.0-6                                                                                                                          
+
+Complete!
+
+
+[root@avsprdjrcnfdb01 ~]# yum install postgresql96 postgresql96-server postgresql96-contrib postgresql96-libs -y
+Loaded plugins: fastestmirror, langpacks
+Loading mirror speeds from cached hostfile
+ * base: kozyatagi.mirror.guzel.net.tr
+ * extras: mirror.radoreservers.com
+ * updates: mirror.natro.com
+pgdg10                                                                                                                               | 3.6 kB  00:00:00     
+pgdg11                                                                                                                               | 3.6 kB  00:00:00     
+pgdg12                                                                                                                               | 3.6 kB  00:00:00     
+pgdg94                                                                                                                               | 3.6 kB  00:00:00     
+pgdg95                                                                                                                               | 3.6 kB  00:00:00     
+pgdg96                                                                                                                               | 3.6 kB  00:00:00     
+(1/12): pgdg12/7/x86_64/group_gz                                                                                                     |  245 B  00:00:00     
+(2/12): pgdg11/7/x86_64/group_gz                                                                                                     |  245 B  00:00:00     
+(3/12): pgdg94/7/x86_64/group_gz                                                                                                     |  247 B  00:00:00     
+(4/12): pgdg10/7/x86_64/group_gz                                                                                                     |  245 B  00:00:01     
+(5/12): pgdg12/7/x86_64/primary_db                                                                                                   | 179 kB  00:00:00     
+(6/12): pgdg10/7/x86_64/primary_db                                                                                                   | 412 kB  00:00:01     
+(7/12): pgdg96/7/x86_64/group_gz                                                                                                     |  249 B  00:00:00     
+(8/12): pgdg95/7/x86_64/group_gz                                                                                                     |  249 B  00:00:00     
+(9/12): pgdg96/7/x86_64/primary_db                                                                                                   | 428 kB  00:00:00     
+(10/12): pgdg94/7/x86_64/primary_db                                                                                                  | 396 kB  00:00:00     
+(11/12): pgdg95/7/x86_64/primary_db                                                                                                  | 416 kB  00:00:01     
+(12/12): pgdg11/7/x86_64/primary_db                                                                                                  | 375 kB  00:00:02     
+Resolving Dependencies
+--> Running transaction check
+---> Package postgresql96.x86_64 0:9.6.16-2PGDG.rhel7 will be installed
+---> Package postgresql96-contrib.x86_64 0:9.6.16-2PGDG.rhel7 will be installed
+---> Package postgresql96-libs.x86_64 0:9.6.16-2PGDG.rhel7 will be installed
+---> Package postgresql96-server.x86_64 0:9.6.16-2PGDG.rhel7 will be installed
+--> Finished Dependency Resolution
+
+Dependencies Resolved
+
+============================================================================================================================================================
+ Package                                     Arch                          Version                                      Repository                     Size
+============================================================================================================================================================
+Installing:
+ postgresql96                                x86_64                        9.6.16-2PGDG.rhel7                           pgdg96                        1.4 M
+ postgresql96-contrib                        x86_64                        9.6.16-2PGDG.rhel7                           pgdg96                        564 k
+ postgresql96-libs                           x86_64                        9.6.16-2PGDG.rhel7                           pgdg96                        320 k
+ postgresql96-server                         x86_64                        9.6.16-2PGDG.rhel7                           pgdg96                        4.5 M
+
+Transaction Summary
+============================================================================================================================================================
+Install  4 Packages
+
+Total download size: 6.8 M
+Installed size: 30 M
+Downloading packages:
+warning: /var/cache/yum/x86_64/7/pgdg96/packages/postgresql96-9.6.16-2PGDG.rhel7.x86_64.rpm: Header V4 DSA/SHA1 Signature, key ID 442df0f8: NOKEY:00:06 ETA 
+Public key for postgresql96-9.6.16-2PGDG.rhel7.x86_64.rpm is not installed
+(1/4): postgresql96-9.6.16-2PGDG.rhel7.x86_64.rpm                                                                                    | 1.4 MB  00:00:02     
+(2/4): postgresql96-libs-9.6.16-2PGDG.rhel7.x86_64.rpm                                                                               | 320 kB  00:00:00     
+(3/4): postgresql96-contrib-9.6.16-2PGDG.rhel7.x86_64.rpm                                                                            | 564 kB  00:00:07     
+(4/4): postgresql96-server-9.6.16-2PGDG.rhel7.x86_64.rpm                                                                             | 4.5 MB  00:00:15     
+------------------------------------------------------------------------------------------------------------------------------------------------------------
+Total                                                                                                                       371 kB/s | 6.8 MB  00:00:18     
+Retrieving key from file:///etc/pki/rpm-gpg/RPM-GPG-KEY-PGDG
+Importing GPG key 0x442DF0F8:
+ Userid     : "PostgreSQL RPM Building Project <pgsqlrpms-hackers@pgfoundry.org>"
+ Fingerprint: 68c9 e2b9 1a37 d136 fe74 d176 1f16 d2e1 442d f0f8
+ Package    : pgdg-redhat-repo-42.0-6.noarch (@/pgdg-redhat96-9.6-3.noarch)
+ From       : /etc/pki/rpm-gpg/RPM-GPG-KEY-PGDG
+Running transaction check
+Running transaction test
+Transaction test succeeded
+Running transaction
+  Installing : postgresql96-libs-9.6.16-2PGDG.rhel7.x86_64                                                                                              1/4 
+  Installing : postgresql96-9.6.16-2PGDG.rhel7.x86_64                                                                                                   2/4 
+  Installing : postgresql96-contrib-9.6.16-2PGDG.rhel7.x86_64                                                                                           3/4 
+  Installing : postgresql96-server-9.6.16-2PGDG.rhel7.x86_64                                                                                            4/4 
+  Verifying  : postgresql96-contrib-9.6.16-2PGDG.rhel7.x86_64                                                                                           1/4 
+  Verifying  : postgresql96-libs-9.6.16-2PGDG.rhel7.x86_64                                                                                              2/4 
+  Verifying  : postgresql96-server-9.6.16-2PGDG.rhel7.x86_64                                                                                            3/4 
+  Verifying  : postgresql96-9.6.16-2PGDG.rhel7.x86_64                                                                                                   4/4 
+
+Installed:
+  postgresql96.x86_64 0:9.6.16-2PGDG.rhel7            postgresql96-contrib.x86_64 0:9.6.16-2PGDG.rhel7     postgresql96-libs.x86_64 0:9.6.16-2PGDG.rhel7    
+  postgresql96-server.x86_64 0:9.6.16-2PGDG.rhel7    
+
+Complete!
+[root@avsprdjrcnfdb01 ~]#
+
+
+[root@avsprdjrcnfdb01 ~]# cat /etc/passwd
+root:x:0:0:root:/root:/bin/bash
+bin:x:1:1:bin:/bin:/sbin/nologin
+daemon:x:2:2:daemon:/sbin:/sbin/nologin
+adm:x:3:4:adm:/var/adm:/sbin/nologin
+lp:x:4:7:lp:/var/spool/lpd:/sbin/nologin
+sync:x:5:0:sync:/sbin:/bin/sync
+shutdown:x:6:0:shutdown:/sbin:/sbin/shutdown
+halt:x:7:0:halt:/sbin:/sbin/halt
+mail:x:8:12:mail:/var/spool/mail:/sbin/nologin
+operator:x:11:0:operator:/root:/sbin/nologin
+games:x:12:100:games:/usr/games:/sbin/nologin
+ftp:x:14:50:FTP User:/var/ftp:/sbin/nologin
+nobody:x:99:99:Nobody:/:/sbin/nologin
+avahi-autoipd:x:170:170:Avahi IPv4LL Stack:/var/lib/avahi-autoipd:/sbin/nologin
+systemd-bus-proxy:x:999:997:systemd Bus Proxy:/:/sbin/nologin
+systemd-network:x:998:996:systemd Network Management:/:/sbin/nologin
+dbus:x:81:81:System message bus:/:/sbin/nologin
+polkitd:x:997:995:User for polkitd:/:/sbin/nologin
+colord:x:996:994:User for colord:/var/lib/colord:/sbin/nologin
+abrt:x:173:173::/etc/abrt:/sbin/nologin
+tss:x:59:59:Account used by the trousers package to sandbox the tcsd daemon:/dev/null:/sbin/nologin
+unbound:x:995:993:Unbound DNS resolver:/etc/unbound:/sbin/nologin
+usbmuxd:x:113:113:usbmuxd user:/:/sbin/nologin
+saslauth:x:994:76:Saslauthd user:/run/saslauthd:/sbin/nologin
+libstoragemgmt:x:993:990:daemon account for libstoragemgmt:/var/run/lsm:/sbin/nologin
+geoclue:x:992:989:User for geoclue:/var/lib/geoclue:/sbin/nologin
+rpc:x:32:32:Rpcbind Daemon:/var/lib/rpcbind:/sbin/nologin
+setroubleshoot:x:991:988::/var/lib/setroubleshoot:/sbin/nologin
+postfix:x:89:89::/var/spool/postfix:/sbin/nologin
+rtkit:x:172:172:RealtimeKit:/proc:/sbin/nologin
+qemu:x:107:107:qemu user:/:/sbin/nologin
+rpcuser:x:29:29:RPC Service User:/var/lib/nfs:/sbin/nologin
+nfsnobody:x:65534:65534:Anonymous NFS User:/var/lib/nfs:/sbin/nologin
+radvd:x:75:75:radvd user:/:/sbin/nologin
+chrony:x:990:987::/var/lib/chrony:/sbin/nologin
+pcp:x:989:986:Performance Co-Pilot:/var/lib/pcp:/sbin/nologin
+pulse:x:171:171:PulseAudio System Daemon:/var/run/pulse:/sbin/nologin
+gdm:x:42:42::/var/lib/gdm:/sbin/nologin
+gnome-initial-setup:x:988:983::/run/gnome-initial-setup/:/sbin/nologin
+avahi:x:70:70:Avahi mDNS/DNS-SD Stack:/var/run/avahi-daemon:/sbin/nologin
+sshd:x:74:74:Privilege-separated SSH:/var/empty/sshd:/sbin/nologin
+ntp:x:38:38::/etc/ntp:/sbin/nologin
+oprofile:x:16:16:Special user account to be used by OProfile:/var/lib/oprofile:/sbin/nologin
+tcpdump:x:72:72::/:/sbin/nologin
+bsunx:x:421:421::/home/bsunx:/bin/bash
+bsdb:x:422:422::/home/bsdb:/bin/bash
+bsmw:x:423:423::/home/bsmw:/bin/bash
+bserp:x:424:424::/home/bserp:/bin/bash
+bssu:x:425:425::/home/bssu:/bin/bash
+bsbck:x:426:426::/home/bsbck:/bin/bash
+bsstr:x:427:427::/home/bsstr:/bin/bash
+bsvm:x:428:428::/home/bsvm:/bin/bash
+bssec:x:429:429::/home/bssec:/bin/bash
+bsnpu:x:430:430::/home/bsnpu:/bin/bash
+bsfnc:x:431:431::/home/bsfnc:/bin/bash
+bsoprt:x:432:432::/home/bsoprt:/bin/bash
+bssis:x:450:450::/home/bssis:/bin/bash
+gluster:x:420:418:GlusterFS daemons:/var/run/gluster:/sbin/nologin
+saned:x:419:417:SANE scanner daemon user:/usr/share/sane:/sbin/nologin
+zabbix:x:418:416:Zabbix Monitoring System:/var/lib/zabbix:/sbin/nologin
+nscd:x:28:28:NSCD Daemon:/:/sbin/nologin
+Seda:x:1000:1000::/home/Seda:/bin/bash
+postgres:x:26:26:PostgreSQL Server:/var/lib/pgsql:/bin/bash
+[root@avsprdjrcnfdb01 ~]# 
+[root@avsprdjrcnfdb01 ~]# 
+[root@avsprdjrcnfdb01 ~]# 
+[root@avsprdjrcnfdb01 /]# mkdir -p /p01/9.6/data   
+[root@avsprdjrcnfdb01 /]# 
+[root@avsprdjrcnfdb01 /]# 
+[root@avsprdjrcnfdb01 /]# chown -R postgres:postgres /p01
+[root@avsprdjrcnfdb01 /]# 
+[root@avsprdjrcnfdb01 /]# 
+[root@avsprdjrcnfdb01 /]# export EDITOR=vi
+[root@avsprdjrcnfdb01 /]# 
+[root@avsprdjrcnfdb01 /]# 
+[root@avsprdjrcnfdb01 /]# systemctl edit postgresql-9.6.service
+
+Buraya şunu girdik
+
+[Service]
+Environment=PGDATA=/p01/10/data
+
+
+Kontrol  ediyoruz
+[root@avsprdjrcnfdb01 /]# 
+[root@avsprdjrcnfdb01 /]# 
+[root@avsprdjrcnfdb01 /]# 
+[root@avsprdjrcnfdb01 /]# cat /etc/systemd/system/postgresql-9.6.service.d/override.conf
+[Service]
+Environment=PGDATA=/p01/9.6/data
+[root@avsprdjrcnfdb01 /]# 
+[root@avsprdjrcnfdb01 /]# 
+[root@avsprdjrcnfdb01 /]# 
+[root@avsprdjrcnfdb01 /]# /usr/pgsql-9.6/bin/postgresql96-setup initdb
+Initializing database ... OK
+
+[root@avsprdjrcnfdb01 /]# cd  /p01/9.6/data/
+[root@avsprdjrcnfdb01 data]# ls
+base    pg_clog       pg_hba.conf    pg_multixact  pg_serial     pg_stat_tmp  pg_twophase  postgresql.auto.conf
+global  pg_commit_ts  pg_ident.conf  pg_notify     pg_snapshots  pg_subtrans  PG_VERSION   postgresql.conf
+log     pg_dynshmem   pg_logical     pg_replslot   pg_stat       pg_tblspc    pg_xlog
+[root@avsprdjrcnfdb01 data]# systemctl enable postgresql-9.6
+Created symlink from /etc/systemd/system/multi-user.target.wants/postgresql-9.6.service to /usr/lib/systemd/system/postgresql-9.6.service.
+[root@avsprdjrcnfdb01 data]# systemctl start postgresql-9.6
+[root@avsprdjrcnfdb01 data]#  systemctl status postgresql-9.6
+● postgresql-9.6.service - PostgreSQL 9.6 database server
+   Loaded: loaded (/usr/lib/systemd/system/postgresql-9.6.service; enabled; vendor preset: disabled)
+  Drop-In: /etc/systemd/system/postgresql-9.6.service.d
+           └─override.conf
+   Active: active (running) since Tue 2020-02-11 11:38:45 +03; 12s ago
+     Docs: https://www.postgresql.org/docs/9.6/static/
+  Process: 125936 ExecStartPre=/usr/pgsql-9.6/bin/postgresql96-check-db-dir ${PGDATA} (code=exited, status=0/SUCCESS)
+ Main PID: 125942 (postmaster)
+   CGroup: /system.slice/postgresql-9.6.service
+           ├─125942 /usr/pgsql-9.6/bin/postmaster -D /p01/9.6/data
+           ├─125944 postgres: logger process   
+           ├─125946 postgres: checkpointer process   
+           ├─125947 postgres: writer process   
+           ├─125948 postgres: wal writer process   
+           ├─125949 postgres: autovacuum launcher process   
+           └─125950 postgres: stats collector process   
+
+Feb 11 11:38:45 avsprdjrcnfdb01 systemd[1]: Starting PostgreSQL 9.6 database server...
+Feb 11 11:38:45 avsprdjrcnfdb01 postmaster[125942]: < 2020-02-11 11:38:45.850 +03 > LOG:  redirecting log output to logging collector process
+Feb 11 11:38:45 avsprdjrcnfdb01 postmaster[125942]: < 2020-02-11 11:38:45.850 +03 > HINT:  Future log output will appear in directory "pg_log".
+Feb 11 11:38:45 avsprdjrcnfdb01 systemd[1]: Started PostgreSQL 9.6 database server.
+[root@avsprdjrcnfdb01 data]#  su - postgres
+-bash-4.2$ cd /p01/9.6/data/
+-bash-4.2$ ls
+base    pg_clog       pg_hba.conf    pg_logical    pg_replslot   pg_stat      pg_tblspc    pg_xlog               postmaster.opts
+global  pg_commit_ts  pg_ident.conf  pg_multixact  pg_serial     pg_stat_tmp  pg_twophase  postgresql.auto.conf  postmaster.pid
+log     pg_dynshmem   pg_log         pg_notify     pg_snapshots  pg_subtrans  PG_VERSION   postgresql.conf
+-bash-4.2$ psql
+psql (9.6.16)
+Type "help" for help.
+
+postgres=#
+postgres=#\q
+-bash-4.2$
