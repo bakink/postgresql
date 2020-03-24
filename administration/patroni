@@ -1,3 +1,4 @@
 --https://medium.com/searce/design-a-highly-available-postgresql-cluster-with-patroni-in-gcp-part-2-9df6ab4de741
 --https://www.alibabacloud.com/blog/how-to-set-up-a-highly-available-postgresql-cluster-using-patroni-on-ubuntu-16-04_594477
 --https://guncekaya.blogspot.com/2020/01/PostgreSQL-Autofailover-Patroni-3.html
+--https://www.opsdash.com/blog/postgres-getting-started-patroni.html
