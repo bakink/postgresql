@@ -1,4 +1,5 @@
 --https://github.com/etcd-io/etcd/releases
+--https://patroni.readthedocs.io/en/latest/SETTINGS.html#etcd
 
 ---cat /etc/default/etcd
 #[Member]
