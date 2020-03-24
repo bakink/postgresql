@@ -1,5 +1,6 @@
 --https://github.com/etcd-io/etcd/releases
 --https://patroni.readthedocs.io/en/latest/SETTINGS.html#etcd
+--https://blog.scottlowe.org/2015/04/15/running-etcd-20-cluster/
 
 ---cat /etc/default/etcd
 #[Member]
