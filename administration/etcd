@@ -1,0 +1,48 @@
+--https://github.com/etcd-io/etcd/releases
+
+---cat /etc/default/etcd
+#[Member]
+ETCD_DATA_DIR="/var/lib/etcd/default.etcd"
+ETCD_LISTEN_PEER_URLS="http://185.70.86.61:2380,http://127.0.0.1:7001"
+ETCD_LISTEN_CLIENT_URLS="http://185.70.86.61:2379,http://127.0.0.1:2379"
+ETCD_NAME="node01"
+
+#[node0ing]
+ETCD_INITIAL_ADVERTISE_PEER_URLS="http://:2380"
+ETCD_ADVERTISE_CLIENT_URLS="http://185.70.86.61:2379"
+ETCD_INITIAL_node0="node01=http://185.70.86.61:2380,node02=http://185.70.86.62:2380,node03=http://185.70.86.63:2380"
+ETCD_INITIAL_node0_TOKEN="etcd-cluster-01"
+ETCD_INITIAL_node0_STATE="new"
+deka@node01:~$
+
+--start etcd cluster
+
+nohup etcd --data-dir /var/lib/etcd/default.etcd --name node01 --initial-advertise-peer-urls http://185.70.86.61:2380 \
+  --listen-peer-urls "http://185.70.86.61:2380,http://127.0.0.1:7001" \
+  --listen-client-urls "http://185.70.86.61:2379,http://127.0.0.1:2379" \
+  --advertise-client-urls http://185.70.86.61:2379 \
+  --initial-cluster-token etcd-cluster-01 \
+  --initial-cluster "node01=http://185.70.86.61:2380,node02=http://185.70.86.62:2380,node03=http://185.70.86.63:2380" \
+  --enable-v2 \
+  --initial-cluster-state new &
+  
+
+nohup etcd --data-dir /var/lib/etcd/default.etcd --name node02 --initial-advertise-peer-urls http://185.70.86.62:2380 \
+  --listen-peer-urls "http://185.70.86.62:2380,http://127.0.0.1:7001" \
+  --listen-client-urls "http://185.70.86.62:2379,http://127.0.0.1:2379" \
+  --advertise-client-urls http://185.70.86.62:2379 \
+  --initial-cluster-token etcd-cluster-01 \
+  --initial-cluster "node01=http://185.70.86.61:2380,node02=http://185.70.86.62:2380,node03=http://185.70.86.63:2380" \
+  --enable-v2 \
+  --initial-cluster-state new &
+  
+  
+nohup etcd --data-dir /var/lib/etcd/default.etcd --name node03 --initial-advertise-peer-urls http://185.70.86.62:2380 \
+  --listen-peer-urls "http://185.70.86.63:2380,http://127.0.0.1:7001" \
+  --listen-client-urls "http://185.70.86.63:2379,http://127.0.0.1:2379" \
+  --advertise-client-urls http://185.70.86.63:2379 \
+  --initial-cluster-token etcd-cluster-01 \
+  --initial-cluster "node01=http://185.70.86.61:2380,node02=http://185.70.86.62:2380,node03=http://185.70.86.63:2380" \
+  --enable-v2 \
+  --initial-cluster-state new &
+  
