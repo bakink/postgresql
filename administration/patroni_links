@@ -1,0 +1,26 @@
+--etcd
+
+https://etcd.io/docs/v3.3.12/op-guide/recovery/
+https://github.com/etcd-io/etcd/releases
+
+--pgbouncer
+https://gpdb.docs.pivotal.io/43240/admin_guide/access_db/topics/pgbouncer.html
+https://www.cybertec-postgresql.com/en/pgbouncer-authentication-made-easy/?gclid=Cj0KCQjwyPbzBRDsARIsAFh15JZXonMXe8H2Z2zL6Rbr1vVxA14TuA8uQj-1Gbp1-GQPfjanlA0u2wQaAjlAEALw_wcB
+https://mydbops.wordpress.com/2020/03/25/getting-started-with-pgbouncer-in-postgresql/
+
+--patroni/etcd
+https://www.alibabacloud.com/blog/how-to-set-up-a-highly-available-postgresql-cluster-using-patroni-on-ubuntu-16-04_594477
+https://msd.misuland.com/pd/3545776874745502340
+https://www.opsdash.com/blog/postgres-getting-started-patroni.html
+https://www.linode.com/docs/databases/postgresql/create-a-highly-available-postgresql-cluster-using-patroni-and-haproxy/
+https://github.com/vitabaks/postgresql_cluster
+https://pgconf.ru/en/2018/108567 --traning
+https://medium.com/searce/design-a-highly-available-postgresql-cluster-with-patroni-in-gcp-part-2-9df6ab4de741
+https://www.cybertec-postgresql.com/en/patroni-setting-up-a-highly-available-postgresql-cluster/
+
+--haproxy
+
+https://www.fromdual.com/making-haproxy-high-available-for-mysql-galera-cluster
+https://www.percona.com/blog/2019/10/31/postgresql-application-connection-failover-using-haproxy-with-xinetd/
+https://severalnines.com/database-blog/postgresql-load-balancing-using-haproxy-keepalived
+https://severalnines.com/database-blog/how-create-single-endpoint-your-postgresql-replication-setup-using-haproxy
