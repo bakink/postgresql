@@ -3,3 +3,62 @@
 sysbench --db-driver=pgsql --report-interval=2 --oltp-table-size=100000 --oltp-tables-count=24 --threads=64 --time=60 --pgsql-host=185.70.86.61 --pgsql-port=5001 --pgsql-user=sbtest --pgsql-password=password --pgsql-db=sbtest /usr/share/sysbench/tests/include/oltp_legacy/select.lua run
 
 sysbench --db-driver=pgsql --report-interval=2 --oltp-table-size=100000 --oltp-tables-count=24 --threads=64 --time=60 --pgsql-host=185.70.86.63 --pgsql-port=5000 --pgsql-user=sbtest --pgsql-password=password --pgsql-db=sbtest /usr/share/sysbench/tests/include/oltp_legacy/oltp.lua run
+
+
+CREATE USER 'sbtest' WITH PASSWORD 'password';
+CREATE DATABASE sbtest;
+GRANT ALL PRIVILEGES ON DATABASE sbtest TO sbtest;
+
+CREATE USER sbtest WITH PASSWORD 'sbtest'
+
+
+> CREATE USER sbtest WITH PASSWORD 'password';
+> CREATE DATABASE sbtest;
+> GRANT ALL PRIVILEGES ON DATABASE sbtest TO sbtest;
+
+CREATE USER sbtest WITH PASSWORD 'password';
+
+
+sysbench \
+--db-driver=pgsql \
+--oltp-table-size=100000 \
+--oltp-tables-count=24 \
+--threads=1 \
+--pgsql-host=185.70.86.61 \
+--pgsql-port=5000 \
+--pgsql-user=sbtest \
+--pgsql-password=password \
+--pgsql-db=sbtest \
+/usr/share/sysbench/tests/include/oltp_legacy/parallel_prepare.lua \
+run
+
+
+sysbench \
+--db-driver=pgsql \
+--report-interval=2 \
+--oltp-table-size=100000 \
+--oltp-tables-count=24 \
+--threads=64 \
+--time=60 \
+--pgsql-host=185.70.86.61 \
+--pgsql-port=5432 \
+--pgsql-user=sbtest \
+--pgsql-password=password \
+--pgsql-db=sbtest \
+/usr/share/sysbench/tests/include/oltp_legacy/oltp.lua \
+run
+
+sysbench \
+--db-driver=pgsql \
+--report-interval=2 \
+--oltp-table-size=100000 \
+--oltp-tables-count=24 \
+--threads=64 \
+--time=60 \
+--pgsql-host=185.70.86.61 \
+--pgsql-port=5001 \
+--pgsql-user=sbtest \
+--pgsql-password=password \
+--pgsql-db=sbtest \
+/usr/share/sysbench/tests/include/oltp_legacy/select.lua \
+run
