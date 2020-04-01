@@ -1,0 +1,6 @@
+--https://www.percona.com/blog/2020/03/31/useful-queries-for-postgresql-index-maintenance/
+--https://wiki.postgresql.org/wiki/Index_Maintenance
+--https://xzilla.net/blog/2008/Jul/Index-pruning-techniques.html
+--http://hype-free.blogspot.com/2008/09/finding-unused-indexes-in-postgresql.html
+--https://it.toolbox.com/blogs/josh-berkus/finding-useless-indexes-121408
+--https://jmorano.moretrix.com/2014/02/postgresql-monitor-unused-indexes/
