@@ -4,3 +4,347 @@
 --http://hype-free.blogspot.com/2008/09/finding-unused-indexes-in-postgresql.html
 --https://it.toolbox.com/blogs/josh-berkus/finding-useless-indexes-121408
 --https://jmorano.moretrix.com/2014/02/postgresql-monitor-unused-indexes/
+
+
+1 – Sometimes you need to see how many indexes your table has. This query will show the schema-qualified table name and its index names.
+
+Shell
+db=# SELECT CONCAT(n.nspname,'.', c.relname) AS table,
+    i.relname AS index_name FROM pg_class c
+     JOIN pg_index x ON c.oid = x.indrelid
+     JOIN pg_class i ON i.oid = x.indexrelid LEFT JOIN pg_namespace n ON n.oid = c.relnamespace
+  WHERE c.relkind = ANY (ARRAY['r', 't']) AND c.relname like 'pgbench_accounts';
+          table          | index_name       
+-------------------------+------------------------
+ public.pgbench_accounts | pgbench_accounts_pkey
+ public.pgbench_accounts | pgbench_accounts_index
+(2 rows)
+1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+db=# SELECT CONCAT(n.nspname,'.', c.relname) AS table,
+    i.relname AS index_name FROM pg_class c
+     JOIN pg_index x ON c.oid = x.indrelid
+     JOIN pg_class i ON i.oid = x.indexrelid LEFT JOIN pg_namespace n ON n.oid = c.relnamespace
+  WHERE c.relkind = ANY (ARRAY['r', 't']) AND c.relname like 'pgbench_accounts';
+          table          | index_name       
+-------------------------+------------------------
+ public.pgbench_accounts | pgbench_accounts_pkey
+ public.pgbench_accounts | pgbench_accounts_index
+(2 rows)
+2 – As we all know, an index is a performance feature, but along with that, it is also used to ensure uniqueness. But to ensure the uniqueness we need a separate type of index called a unique index. To check whether an index is unique or not, pg_index has a column named “indisunique” to identify the uniqueness of the index.
+
+Shell
+SELECT    i.relname AS index_name,
+          indisunique is_unique
+FROM      pg_class c
+JOIN      pg_index x ON c.oid = x.indrelid
+JOIN      pg_class i ON i.oid = x.indexrelid
+LEFT JOIN pg_namespace n ON n.oid = c.relnamespace
+WHERE     c.relkind = ANY (ARRAY['r', 't'])
+AND       c.relname LIKE 'pgbench_accounts';
+       index_name       | is_unique 
+------------------------+-----------
+ pgbench_accounts_pkey  | t
+ pgbench_accounts_index | f
+(2 rows)
+1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+SELECT    i.relname AS index_name,
+          indisunique is_unique
+FROM      pg_class c
+JOIN      pg_index x ON c.oid = x.indrelid
+JOIN      pg_class i ON i.oid = x.indexrelid
+LEFT JOIN pg_namespace n ON n.oid = c.relnamespace
+WHERE     c.relkind = ANY (ARRAY['r', 't'])
+AND       c.relname LIKE 'pgbench_accounts';
+       index_name       | is_unique 
+------------------------+-----------
+ pgbench_accounts_pkey  | t
+ pgbench_accounts_index | f
+(2 rows)
+3 – There is a pretty simple way to get the size of the index of PostgreSQL. Here is a query to list the PostgreSQL with size.
+
+Shell
+SELECT pg_size_pretty(pg_relation_size('pgbench_accounts_index'));
+ pg_size_pretty 
+----------------
+ 132 MB
+(1 row)
+1
+2
+3
+4
+5
+SELECT pg_size_pretty(pg_relation_size('pgbench_accounts_index'));
+ pg_size_pretty 
+----------------
+ 132 MB
+(1 row)
+4 – Here is a list of the indexes with total table size and size of the index, which is very useful to compare your table size with its corresponding indexes.  It’s very good to know the size of your table, index, and the total size of the table.
+
+Shell
+SELECT    CONCAT(n.nspname,'.', c.relname) AS table,
+          i.relname AS index_name, pg_size_pretty(pg_relation_size(x.indrelid)) AS table_size,
+          pg_size_pretty(pg_relation_size(x.indexrelid)) AS index_size,
+          pg_size_pretty(pg_total_relation_size(x.indrelid)) AS total_size FROM pg_class c 
+JOIN      pg_index x ON c.oid = x.indrelid
+JOIN      pg_class i ON i.oid = x.indexrelid
+LEFT JOIN pg_namespace n ON n.oid = c.relnamespace
+WHERE     c.relkind = ANY (ARRAY['r', 't'])
+AND       n.oid NOT IN (99, 11, 12375);
+          table          | index_name       | table_size | index_size | total_size 
+-------------------------+------------------------+------------+------------+------------
+ public.pgbench_tellers  | pgbench_tellers_pkey   | 88 kB      | 64 kB  | 152 kB
+ public.pgbench_accounts | pgbench_accounts_pkey  | 2561 MB    | 428 MB | 3122 MB
+ public.pgbench_accounts | pgbench_accounts_index | 2561 MB    | 132 MB | 3122 MB
+ public.pgbench_branches | pgbench_branches_pkey  | 8192 bytes | 16 kB  | 24 kB
+(4 rows)
+1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+SELECT    CONCAT(n.nspname,'.', c.relname) AS table,
+          i.relname AS index_name, pg_size_pretty(pg_relation_size(x.indrelid)) AS table_size,
+          pg_size_pretty(pg_relation_size(x.indexrelid)) AS index_size,
+          pg_size_pretty(pg_total_relation_size(x.indrelid)) AS total_size FROM pg_class c 
+JOIN      pg_index x ON c.oid = x.indrelid
+JOIN      pg_class i ON i.oid = x.indexrelid
+LEFT JOIN pg_namespace n ON n.oid = c.relnamespace
+WHERE     c.relkind = ANY (ARRAY['r', 't'])
+AND       n.oid NOT IN (99, 11, 12375);
+          table          | index_name       | table_size | index_size | total_size 
+-------------------------+------------------------+------------+------------+------------
+ public.pgbench_tellers  | pgbench_tellers_pkey   | 88 kB      | 64 kB  | 152 kB
+ public.pgbench_accounts | pgbench_accounts_pkey  | 2561 MB    | 428 MB | 3122 MB
+ public.pgbench_accounts | pgbench_accounts_index | 2561 MB    | 132 MB | 3122 MB
+ public.pgbench_branches | pgbench_branches_pkey  | 8192 bytes | 16 kB  | 24 kB
+(4 rows)
+pg_relation_size: Function gives the size of relation. It is used to get the size of the table/index.
+
+pg_total_relation_size:  This is a special function that gives the total size of the table along with its all indexes.
+
+5 – Get the query of the index. This query will show the index creation query.
+
+Shell
+SELECT pg_get_indexdef(indexrelid) AS index_query
+FROM   pg_index WHERE  indrelid = 'pgbench_accounts'::regclass;
+                                     index_query
+----------------------------------------------------------------------------------------
+CREATE UNIQUE INDEX pgbench_accounts_pkey ON public.pgbench_accounts USING btree (aid)
+CREATE INDEX pgbench_accounts_index ON public.pgbench_accounts USING btree (bid)
+CREATE INDEX pgbench_accounts_index_dup ON public.pgbench_accounts USING btree (bid)
+(3 rows)
+1
+2
+3
+4
+5
+6
+7
+8
+SELECT pg_get_indexdef(indexrelid) AS index_query
+FROM   pg_index WHERE  indrelid = 'pgbench_accounts'::regclass;
+                                     index_query
+----------------------------------------------------------------------------------------
+CREATE UNIQUE INDEX pgbench_accounts_pkey ON public.pgbench_accounts USING btree (aid)
+CREATE INDEX pgbench_accounts_index ON public.pgbench_accounts USING btree (bid)
+CREATE INDEX pgbench_accounts_index_dup ON public.pgbench_accounts USING btree (bid)
+(3 rows)
+6 – In case your index becomes corrupted or bloated, you need to build that index again. At the same time, you don’t want to block the operation on your table, so this REINDEX CONCURRENTLY command is your choice for that.
+
+Shell
+REINDEX INDEX CONCURRENTLY idx;
+REINDEX
+1
+2
+REINDEX INDEX CONCURRENTLY idx;
+REINDEX
+7 – PostgreSQL has many index methods like BTree, Hash, BRIN, GIST, and GIN. Sometimes we want to create some specific index on a column but are unable to do that. PostgreSQL has limitations that some indexes cannot be created on some data types and operators, and that makes sense too. For example, the Hash index can only be used for equal operators. Here is a query to get the list of the supported data types for a particular index.
+
+Shell
+SELECT amname,
+       opfname
+FROM   pg_opfamily,
+       pg_am
+WHERE  opfmethod = pg_am.oid
+AND    amname = 'btree';
+
+amname | opfname
+--------+--------------------
+btree  | array_ops
+btree  | bit_ops
+btree  | bool_ops
+…
+1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+SELECT amname,
+       opfname
+FROM   pg_opfamily,
+       pg_am
+WHERE  opfmethod = pg_am.oid
+AND    amname = 'btree';
+ 
+amname | opfname
+--------+--------------------
+btree  | array_ops
+btree  | bit_ops
+btree  | bool_ops
+…
+8 – This query will find the unused indexes. If index_scans is 0 or close to 0 then you can drop those indexes. But be careful, as maybe those indexes are for unique purposes.
+
+Unused IndexesShell
+SELECT s.relname AS table_name,
+       indexrelname AS index_name,
+       i.indisunique,
+       idx_scan AS index_scans
+FROM   pg_catalog.pg_stat_user_indexes s,
+       pg_index i
+WHERE  i.indexrelid = s.indexrelid;
+table_name       | index_name            | indisunique | index_scans
+------------------+-----------------------+-------------+-------------
+pgbench_branches | pgbench_branches_pkey | t           | 0
+pgbench_tellers  | pgbench_tellers_pkey  | t           | 0
+pgbench_accounts | pgbench_accounts_pkey | t           | 0
+(3 rows)
+1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+SELECT s.relname AS table_name,
+       indexrelname AS index_name,
+       i.indisunique,
+       idx_scan AS index_scans
+FROM   pg_catalog.pg_stat_user_indexes s,
+       pg_index i
+WHERE  i.indexrelid = s.indexrelid;
+table_name       | index_name            | indisunique | index_scans
+------------------+-----------------------+-------------+-------------
+pgbench_branches | pgbench_branches_pkey | t           | 0
+pgbench_tellers  | pgbench_tellers_pkey  | t           | 0
+pgbench_accounts | pgbench_accounts_pkey | t           | 0
+(3 rows)
+9 – Query used to find a duplicate index. In this example, pgbench_accounts has two of the same indexes. There is no need to have multiple same indexes with a different name on a table. As we already discussed, in case of update/insert, all the indexes get updated along with the actual table, which hurts the performance.
+
+Duplicate indexesShell
+SELECT   indrelid::regclass table_name,
+         att.attname column_name,
+         amname index_method
+FROM     pg_index i,
+         pg_class c,
+         pg_opclass o,
+         pg_am a,
+         pg_attribute att
+WHERE    o.oid = ALL (indclass) 
+AND      att.attnum = ANY(i.indkey)
+AND      a.oid = o.opcmethod
+AND      att.attrelid = c.oid
+AND      c.oid = i.indrelid
+GROUP BY table_name, 
+         att.attname,
+         indclass,
+         amname, indkey
+HAVING count(*) > 1;
+table_name | column_name | index_method
+------------+-------------+--------------
+foo        | a           | btree
+
+(1 row)
+1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+SELECT   indrelid::regclass table_name,
+         att.attname column_name,
+         amname index_method
+FROM     pg_index i,
+         pg_class c,
+         pg_opclass o,
+         pg_am a,
+         pg_attribute att
+WHERE    o.oid = ALL (indclass) 
+AND      att.attnum = ANY(i.indkey)
+AND      a.oid = o.opcmethod
+AND      att.attrelid = c.oid
+AND      c.oid = i.indrelid
+GROUP BY table_name, 
+         att.attname,
+         indclass,
+         amname, indkey
+HAVING count(*) > 1;
+table_name | column_name | index_method
+------------+-------------+--------------
+foo        | a           | btree
+ 
+(1 row)
+Conclusion
+PostgreSQL has catalog tables to store the index information, and therefore, we can write as many queries as we need. This blog shows some basic queries and shows how to use the catalog tables to write the queries.
