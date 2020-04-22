@@ -49,3 +49,12 @@ nohup etcd --data-dir /var/lib/etcd/default.etcd --name node03 --initial-adverti
   --enable-v2 \
   --initial-cluster-state new &
   
+--etcd ssl  
+https://blog.crazytaxii.com/posts/trap_in_etcds_https_deploying/
+http://play.etcd.io/install
+https://zhjwpku.com/docker/2017/04/07/install-etcd-with-https.html
+https://coreos.com/os/docs/latest/generate-self-signed-certificates.html
+https://pcocc.readthedocs.io/en/latest/deps/etcd-production.html
+https://www.ibm.com/support/knowledgecenter/SSFL82_1.1.4/com.ibm.icabi_kc.doc/postgresql_ha/dd_ha_ssl_certs.html?view=embed
+https://www.ibm.com/support/knowledgecenter/SSFL82_1.1.4/com.ibm.icabi_kc.doc/postgresql_ha/dd_ha_software_security.html
+https://github.com/etcd-io/etcd/blob/master/Documentation/op-guide/security.md
