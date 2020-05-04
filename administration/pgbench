@@ -1,0 +1,11 @@
+
+https://www.digitalocean.com/community/tutorials/managed-databases-connection-pools-and-postgresql-benchmarking-using-pgbench
+
+psql -> create database pgbench;
+
+
+pgbench --initialize --scale=8 pgbench
+
+pgbench -h 185.70.86.64 -U postgres --no-vacuum --select-only --protocol=prepared --client=12 --jobs=12 --time=120 -p 5001 pgbench 
+
+pgbench  --select-only --connect -T300 -c8 -j2 -p $port bench
